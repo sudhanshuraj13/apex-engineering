@@ -378,13 +378,6 @@ def cmd_begin(task_desc=None, symbol=None):
     else:
         print("  Stack   : (no package.json or pyproject.toml detected)")
 
-    # ── Active Department Cartridge ──
-    phase = l1_data.get("current_phase", "04-backend-resilience")
-    cartridge_path, cartridge_content = load_department_cartridge(phase)
-    if cartridge_content:
-        print(f"\n--- ACTIVE CARTRIDGE ({phase}) ---")
-        print(cartridge_content[:700])
-
     # ── Skill-registry (Phase 2) — Only print matched stack skills! ──
     registry = load_skill_registry()
     if registry:
@@ -402,6 +395,14 @@ def cmd_begin(task_desc=None, symbol=None):
         print("  Registry: (none – will activate in Phase 2)")
 
     print("==================================")
+
+    # ── Active Department Cartridge (<250 tokens) ──
+    phase = l1_data.get("current_phase", "04-backend-resilience")
+    cartridge_path, cartridge_content = load_department_cartridge(phase)
+    if cartridge_content:
+        print(f"\n--- ACTIVE CARTRIDGE ({phase}) ---")
+        print(cartridge_content)
+        print("----------------------------------\n")
 
     # ── Zero-Dependency AST Symbol Slicer ──
     if symbol:
