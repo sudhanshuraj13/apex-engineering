@@ -7,7 +7,7 @@
 [![Token Footprint: <450](https://img.shields.io/badge/Token%20Footprint-%3C450%20tokens-orange.svg)](#boot-sequence)
 [![Platforms: Antigravity | Claude | OpenCode | Codex | Cursor | BharatCode](https://img.shields.io/badge/Platforms-All%20CLI%20%26%20IDEs-purple.svg)](#-installation-by-platform-cli--ide)
 
-> **Transform any lightweight, older, or frontier model (`qwen-3.8-27b`, `DeepSeek V4.1 Flash`, `Gemini 3.8 Flash`, `Claude`, `GPT`) into an autonomous 8-Department Enterprise Engineering Workforce.**  
+> **100% Model & Editor Agnostic:** Works natively inside **Antigravity, Claude Code, Cursor, OpenCode, and Codex** with any model you already use (**Gemini 3.8 Flash, GPT-4o-mini, Claude Haiku, Llama 3.3, DeepSeek, or Qwen**).  
 > Combines L1/L3 FSA memory, Python AST call-graph slicing, Claude-style Supervisor pre-flight gates, 64-rule SkillSpector SAST security, and deterministic Exit-Code-0 verification.
 
 ---
@@ -246,6 +246,11 @@ python scripts/ingest_skill.py --synthesize "Enforce Strict RFC 3339 ISO Timesta
 ---
 
 ## 🧪 Empirical Hostile Benchmark Suite (12/12 PASS)
+
+### 🔬 Empirical Case Study — Why We Benchmark on a 27B Open-Weight Model (`qwen-3.8-27b` via BharatCode):
+> **Anyone can pass enterprise tests using a \$20/month heavyweight model.**  
+> To prove that `Apex-Engineering` puts the intelligence in the system harness rather than the model weights, we stress-tested our 4-stage hostile enterprise benchmark on a 27-billion parameter open-weight model (`qwen-3.8-27b`) over a stateless API (`store: false`).  
+> **Result:** 98.6% token reduction and 12/12 security & concurrency tests passed (`Exit Code 0`). If Apex makes a 27B model perform like a Principal Engineer, it will supercharge whatever model you run in your IDE.
 
 Run the 4-stage A/B benchmark suite and unit verification harness:
 
