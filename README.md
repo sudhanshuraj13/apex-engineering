@@ -174,7 +174,7 @@ python scripts/bharat_harness.py --task "Design Postgres RLS schema for invoices
 ┌────────────────────────────────────────────────────────────────────────┐
 │ LAYER 2: 8 IT DEPARTMENT CARTRIDGES (cartridges/01 to 08)             │
 │ • Supervisor Pre-Flight Gate: 3 multiple-choice questions on high risk │
-│ • Negative Constraints: strictly forbidden patterns (Ponytail YAGNI)   │
+│ • Negative Constraints: forbidden anti-patterns (Apex Surgical Diffs)  │
 │ • Canonical Code Skeletons: copy-paste enterprise production patterns  │
 │ • Baton Artifacts: writes formal specs to .apex/artifacts/             │
 └───────────────────────────────────┬────────────────────────────────────┘

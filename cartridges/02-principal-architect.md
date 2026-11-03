@@ -2,7 +2,7 @@
 **Fused Winners:** `c4-architecture`, `architecture-decision-records`, `openapi-spec-generation`
 
 ## 1. Negative Constraints (FORBIDDEN)
-- NEVER create 4-layer Hexagonal/DDD ceremony (Factory -> Port -> AbstractInterface) for simple CRUD calls (Ponytail YAGNI).
+- NEVER create 4-layer Hexagonal/DDD ceremony (Factory -> Port -> AbstractInterface) for simple CRUD calls (Apex Surgical Diffs).
 - NEVER leave API payloads untyped; define strict input/output schemas before backend/frontend coding starts.
 - NEVER store architectural choices only in chat history; persist them to `.apex/artifacts/02-contracts.md`.
 

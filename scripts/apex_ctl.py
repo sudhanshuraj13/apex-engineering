@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Apex-Engineering L1/L3 Memory Controller & Gravitas Verification Gate.
+Apex-Engineering L1/L3 Memory Controller & Apex Verification Gate.
 Zero external dependencies (uses Python standard library only).
 
 Phase 2 ready: auto-reads .apex/skill-registry.json, detects project

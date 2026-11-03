@@ -228,7 +228,7 @@ def run_supervisor_preflight_gate(task: str, dept: dict, auto_approve: bool = Fa
         print("│ 1. Container Security : [A] Multi-stage Rootless USER (Default)         [B] Standard   │")
         print("│ 2. Zero-Downtime Probe: [A] Enforce /livez & /readyz + SIGTERM (Default)[B] Basic Port │")
     else:
-        print("│ 1. Architecture Style : [A] Ponytail YAGNI Minimal Diff (Default)       [B] Full DDD   │")
+        print("│ 1. Architecture Style : [A] Apex Surgical Diffs (Default)               [B] Full DDD   │")
         print("│ 2. Boundary Contracts : [A] Strict Zod/Pydantic + RFC 7807 (Default)    [B] Loose JSON │")
     print("│ 3. Gate Enforcement   : [A] Require `apex_ctl.py verify` == 0 (Default) [B] Warn Only  │")
     print(f"{C_YELLOW}{C_BOLD}└──────────────────────────────────────────────────────────────────────────────┘{C_RESET}")
@@ -272,7 +272,7 @@ def build_compound_context(task: str, symbol: str = None, stage_override: str = 
         raw_lines = [line for line in cartridge_path.read_text(encoding="utf-8").splitlines() if line.strip()]
         cartridge_text = "\n".join(raw_lines[:24])
     else:
-        cartridge_text = f"# {dept['name']}\n- Enforce Ponytail YAGNI minimalism and Gravitas Exit Code 0."
+        cartridge_text = f"# {dept['name']}\n- Enforce Apex Surgical Diffs and Apex Deterministic Exit Code 0."
 
     custom_loaded = []
     if CUSTOM_CARTRIDGES_DIR.exists():
@@ -285,7 +285,7 @@ def build_compound_context(task: str, symbol: str = None, stage_override: str = 
         "You are ApexHarness Enterprise Workforce. Obey these 4 mechanical laws:\n"
         "1. Ground on L1 Register, AST Slice, and Blacklist; NEVER repeat a blacklisted attempt.\n"
         "2. Apply the active Department Cartridge rules & Canonical Skeleton strictly.\n"
-        "3. Emit minimal surgical diffs (Ponytail YAGNI) inside allowed_write_scope.\n"
+        "3. Emit minimal surgical diffs (Apex Surgical Diffs) inside allowed_write_scope.\n"
         "4. Every change must pass `apex_ctl.py verify` (Exit Code 0).\n\n"
         f"--- ACTIVE DEPARTMENT: [{dept['id']}] {dept['name']} ({dept['code']}) ---\n{cartridge_text}\n"
     )
@@ -399,10 +399,10 @@ def run_task_workflow(task: str, symbol: str = None, stage: str = None, model: s
         env["APEX_PROJECT_ROOT"] = str(PROJECT_ROOT)
         verify_res = subprocess.run([sys.executable, str(APEX_CTL_SCRIPT), "verify"], cwd=PROJECT_ROOT, env=env, capture_output=True, text=True)
         if verify_res.returncode == 0:
-            print(f"{C_GREEN}{C_BOLD}✔ [GRAVITAS GATE PASSED]{C_RESET} Artifact `{dept['baton']}` saved & logged to `docs/WORKFORCE_LEDGER.md`.")
+            print(f"{C_GREEN}{C_BOLD}✔ [APEX DETERMINISTIC GATE PASSED]{C_RESET} Artifact `{dept['baton']}` saved & logged to `docs/WORKFORCE_LEDGER.md`.")
             return 0
         else:
-            print(f"{C_RED}[GRAVITAS GATE FAILED on Turn {turn}]{C_RESET} Appending to L1 Negative Memory Blacklist...")
+            print(f"{C_RED}[APEX DETERMINISTIC GATE FAILED on Turn {turn}]{C_RESET} Appending to L1 Negative Memory Blacklist...")
     return 1
 
 
