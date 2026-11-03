@@ -1,4 +1,4 @@
-# APEX-ENGINEERING (v3.3)
+# APEX-ENGINEERING
 ### The Frontier SWE & 8-Department Enterprise SaaS Microkernel for AI Coding Agents
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
