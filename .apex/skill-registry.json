@@ -1,7 +1,7 @@
 {
   "version": "3.2.0",
   "generated_at": "2026-11-02T16:20:15.970816",
-  "vault_path": "C:\\Users\\Sudhanshu raj\\.agents\\skills-vault",
+  "vault_path": "~/.agents/skills-vault",
   "stats": {
     "total_scanned": 1507,
     "core_winners": 29,
