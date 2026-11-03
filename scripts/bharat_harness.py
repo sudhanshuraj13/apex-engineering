@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-ApexHarness v3.3 — Universal Multi-Editor Skill & BharatCode CLI Control Plane
+ApexHarness v3.3 — Universal Multi-Editor Skill & Multi-Provider Agentic CLI Harness
 Works everywhere:
   1. Universal Editor Skill Mode: Mounts natively into Antigravity, OpenCode, Claude Code, Cursor & Codex.
   2. Interactive SDLC Workforce CLI: Full 8-Department Pipeline (Idea -> PRD -> Arch -> DB -> Backend -> UI -> Sec -> Deploy).
-  3. BharatCode Stateless Engine: Connects L1/L2/L3 Memory to BharatCode API (qwen-3.8-27b / DeepSeek V4.1 Flash) with `store: false`.
+  3. Universal Provider Engine: Auto-detects BharatCode, Gemini, OpenAI, Groq, OpenRouter, Ollama, or IDE-Native mode.
 """
 import os
 import sys
@@ -85,6 +85,99 @@ def estimate_tokens(text: str) -> int:
     return max(1, len(text) // 4)
 
 
+def resolve_provider_config(cli_model: str = None, cli_provider: str = None) -> dict:
+    """
+    Auto-detects which AI provider the developer is using so the CLI works universally
+    across OpenAI, Gemini, Groq, OpenRouter, Ollama, BharatCode, or IDE-Native mode.
+    """
+    load_dotenv()
+    providers = [
+        {
+            "id": "bharatcode",
+            "env_key": "BHARATCODE_API_KEY",
+            "base_url": os.environ.get("BHARATCODE_BASE_URL", "https://bharatcode.ai/api/model/v1"),
+            "default_model": os.environ.get("BHARATCODE_MODEL", "qwen-3.8-27b"),
+            "extra_body": {"store": False}  # Required by BharatCode stateless API
+        },
+        {
+            "id": "gemini",
+            "env_key": "GEMINI_API_KEY",
+            "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+            "default_model": "gemini-2.5-flash",
+            "extra_body": {}
+        },
+        {
+            "id": "openai",
+            "env_key": "OPENAI_API_KEY",
+            "base_url": "https://api.openai.com/v1",
+            "default_model": "gpt-4o-mini",
+            "extra_body": {}
+        },
+        {
+            "id": "groq",
+            "env_key": "GROQ_API_KEY",
+            "base_url": "https://api.groq.com/openai/v1",
+            "default_model": "llama-3.3-70b-versatile",
+            "extra_body": {}
+        },
+        {
+            "id": "openrouter",
+            "env_key": "OPENROUTER_API_KEY",
+            "base_url": "https://openrouter.ai/api/v1",
+            "default_model": "meta-llama/llama-3.3-70b-instruct:free",
+            "extra_body": {}
+        },
+        {
+            "id": "ollama",
+            "env_key": "OLLAMA_MODEL",
+            "base_url": os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434/v1"),
+            "default_model": os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:7b"),
+            "extra_body": {}
+        }
+    ]
+
+    # 1. If explicit --provider flag passed (e.g., --provider bharatcode)
+    if cli_provider:
+        if cli_provider.lower() in ("ide-native", "local", "ide"):
+            return {
+                "provider": "ide-native",
+                "api_key": "",
+                "base_url": "local",
+                "model": cli_model or "universal-ide-agent",
+                "extra_body": {}
+            }
+        for p in providers:
+            if p["id"] == cli_provider.lower():
+                return {
+                    "provider": p["id"],
+                    "api_key": os.environ.get(p["env_key"], ""),
+                    "base_url": p["base_url"],
+                    "model": cli_model or p["default_model"],
+                    "extra_body": p["extra_body"]
+                }
+
+    # 2. Auto-detect based on whichever API key the user has in their environment
+    for p in providers:
+        val = os.environ.get(p["env_key"], "").strip()
+        if val and not val.startswith("your_"):
+            return {
+                "provider": p["id"],
+                "api_key": val,
+                "base_url": p["base_url"],
+                "model": cli_model or p["default_model"],
+                "extra_body": p["extra_body"]
+            }
+
+    # 3. Default fallback for general GitHub users with no API keys set: IDE-Native Local Mode
+    return {
+        "provider": "ide-native",
+        "api_key": "",
+        "base_url": "local",
+        "model": cli_model or "universal-ide-agent",
+        "extra_body": {}
+    }
+
+
 def detect_blast_radius(task: str):
     task_lower = task.lower()
     return [dom for dom, kws in HIGH_BLAST_RADIUS_KEYWORDS.items() if any(kw in task_lower for kw in kws)]
@@ -120,7 +213,7 @@ def print_banner():
     print(f"{C_CYAN}{C_BOLD}╚══════════════════════════════════════════════════════════════════════════════╝{C_RESET}")
 
 
-def show_pipeline_dashboard():
+def show_pipeline_dashboard(provider: str = None, model: str = None):
     """Renders the 8-Department SDLC Pipeline, L1 Memory State, and Active Batons in the CLI."""
     subprocess.run([sys.executable, str(APEX_CTL_SCRIPT)], cwd=PROJECT_ROOT, capture_output=True)
     l1 = {}
@@ -128,10 +221,14 @@ def show_pipeline_dashboard():
         l1 = json.loads(L1_PATH.read_text(encoding="utf-8"))
     active_phase = l1.get("current_phase", "04-backend-resilience")
 
+    cfg = resolve_provider_config(cli_model=model, cli_provider=provider)
+    mode_str = f"Live API ({cfg['api_key'][:8]}...)" if cfg["api_key"] else ("Local Ollama" if cfg["provider"] == "ollama" else "IDE-Native / Local")
+
     print_banner()
     print(f"\n{C_BOLD}📂 Target Project Workspace:{C_RESET} {PROJECT_ROOT}")
-    print(f"{C_BOLD}🎯 Active Engineering Goal :{C_RESET} {l1.get('active_goal', 'None')}")
-    print(f"{C_BOLD}🛡️  Allowed Write Scope     :{C_RESET} {', '.join(l1.get('allowed_write_scope', ['*']))}")
+    print(f"{C_BOLD}🤖 Active AI Provider       :{C_RESET} [{cfg['provider'].upper()}] {cfg['model']} ({mode_str})")
+    print(f"{C_BOLD}🎯 Active Engineering Goal  :{C_RESET} {l1.get('active_goal', 'None')}")
+    print(f"{C_BOLD}🛡️  Allowed Write Scope      :{C_RESET} {', '.join(l1.get('allowed_write_scope', ['*']))}")
 
     print(f"\n{C_BOLD}┌─ 8-DEPARTMENT ENTERPRISE SDLC PIPELINE (company-dag.json) ───────────────────┐{C_RESET}")
     for d in SDLC_DEPARTMENTS:
@@ -306,22 +403,27 @@ def build_compound_context(task: str, symbol: str = None, stage_override: str = 
     }
 
 
-def call_bharatcode_api(ctx: dict, model: str, dry_run: bool = False) -> dict:
-    """Calls BharatCode stateless API (`store: false`) or synthesizes a dynamic department-accurate plan in dry-run."""
-    base_url = os.environ.get("BHARATCODE_BASE_URL", "https://bharatcode.ai/api/model/v1").rstrip("/")
-    api_key = os.environ.get("BHARATCODE_API_KEY", "").strip()
-    endpoint = f"{base_url}/chat/completions"
+def call_provider_api(ctx: dict, model: str = None, provider: str = None, dry_run: bool = False, provider_cfg: dict = None) -> dict:
+    """Calls detected LLM provider (BharatCode, Gemini, OpenAI, Groq, OpenRouter, Ollama) or synthesizes local plan in dry-run/ide-native."""
+    cfg = provider_cfg or resolve_provider_config(cli_model=model, cli_provider=provider)
+    resolved_model = cfg["model"]
+    active_provider = cfg["provider"]
+    api_key = cfg["api_key"]
+    base_url = cfg["base_url"].rstrip("/")
+    endpoint = f"{base_url}/chat/completions" if base_url != "local" else "local"
     dept = ctx["department"]
 
-    if dry_run or not api_key or api_key == "your_bharatcode_api_key_here":
-        mode_note = "DRY-RUN" if dry_run else "LOCAL-HARNESS-ENGINE (Set BHARATCODE_API_KEY for live cloud inference)"
+    is_local = (active_provider == "ide-native") or (not api_key and active_provider != "ollama") or dry_run or api_key.startswith("your_")
+    if is_local:
+        mode_note = "DRY-RUN" if dry_run else f"IDE-NATIVE ({active_provider.upper()})"
         preview_lines = [l for l in ctx["cartridge_preview"].splitlines() if not l.startswith("#")][:4]
         summary_rules = "\n".join(f"  • {l.lstrip('-* ')}" for l in preview_lines) if preview_lines else "  • Enforced deterministic department invariants."
         return {
             "mode": mode_note,
+            "provider": active_provider,
             "endpoint": endpoint,
-            "model": model,
-            "store": False,
+            "model": resolved_model,
+            "store": cfg.get("extra_body", {}).get("store", False),
             "prompt_tokens": ctx["estimated_tokens"],
             "completion_tokens": 130,
             "response_text": (
@@ -333,8 +435,7 @@ def call_bharatcode_api(ctx: dict, model: str, dry_run: bool = False) -> dict:
         }
 
     payload = {
-        "model": model,
-        "store": False,
+        "model": resolved_model,
         "temperature": 0.1,
         "max_tokens": 650,
         "messages": [
@@ -342,10 +443,20 @@ def call_bharatcode_api(ctx: dict, model: str, dry_run: bool = False) -> dict:
             {"role": "user", "content": ctx["user_prompt"]}
         ]
     }
+    if cfg.get("extra_body"):
+        payload.update(cfg["extra_body"])
+
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": "ApexHarness/3.3"
+    }
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+
     req = urllib.request.Request(
         endpoint,
         data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}", "User-Agent": "ApexHarness/3.3"},
+        headers=headers,
         method="POST"
     )
     try:
@@ -354,10 +465,11 @@ def call_bharatcode_api(ctx: dict, model: str, dry_run: bool = False) -> dict:
             content = body.get("choices", [{}])[0].get("message", {}).get("content", "")
             usage = body.get("usage", {})
             return {
-                "mode": "LIVE-BHARATCODE-API",
+                "mode": f"LIVE-{active_provider.upper()}-API",
+                "provider": active_provider,
                 "endpoint": endpoint,
-                "model": model,
-                "store": False,
+                "model": resolved_model,
+                "store": cfg.get("extra_body", {}).get("store", False),
                 "prompt_tokens": usage.get("prompt_tokens", ctx["estimated_tokens"]),
                 "completion_tokens": usage.get("completion_tokens", estimate_tokens(content)),
                 "response_text": content
@@ -365,17 +477,24 @@ def call_bharatcode_api(ctx: dict, model: str, dry_run: bool = False) -> dict:
     except Exception as e:
         return {
             "mode": "OFFLINE-FALLBACK",
+            "provider": active_provider,
             "endpoint": endpoint,
-            "model": model,
-            "store": False,
+            "model": resolved_model,
+            "store": cfg.get("extra_body", {}).get("store", False),
             "prompt_tokens": ctx["estimated_tokens"],
             "completion_tokens": 0,
             "response_text": f"API unreachable ({e}); local harness state verified."
         }
 
 
-def run_task_workflow(task: str, symbol: str = None, stage: str = None, model: str = "qwen-3.8-27b",
-                      dry_run: bool = False, auto_approve: bool = False) -> int:
+call_bharatcode_api = call_provider_api
+
+
+def run_task_workflow(task: str, symbol: str = None, stage: str = None, model: str = None,
+                      provider: str = None, dry_run: bool = False, auto_approve: bool = False) -> int:
+    cfg = resolve_provider_config(cli_model=model, cli_provider=provider)
+    resolved_model = cfg["model"]
+    active_provider = cfg["provider"]
     dept = select_department_for_task(task, explicit_stage=stage)
     decisions = run_supervisor_preflight_gate(task, dept=dept, auto_approve=auto_approve)
 
@@ -383,11 +502,11 @@ def run_task_workflow(task: str, symbol: str = None, stage: str = None, model: s
         ctx = build_compound_context(task=task, symbol=symbol, stage_override=dept["id"], supervisor_decisions=decisions)
         print(f"{C_CYAN}{C_BOLD}┌─ [TURN {turn}/3] APEX WORKFORCE DISPATCH ────────────────────────────────────────┐{C_RESET}")
         print(f"│ • Active Department : [{dept['id']}] {dept['name']} ({ctx['cartridge']})")
-        print(f"│ • Model & API Mode  : {model} (Stateless `store: false`)")
+        print(f"│ • Provider & Model  : [{active_provider.upper()}] {resolved_model}")
         print(f"│ • Context Payload   : {ctx['estimated_tokens']} tokens (98.6% Queue & Token Reduction)")
         print(f"{C_CYAN}{C_BOLD}└──────────────────────────────────────────────────────────────────────────────┘{C_RESET}")
 
-        api_res = call_bharatcode_api(ctx, model=model, dry_run=dry_run)
+        api_res = call_provider_api(ctx, provider_cfg=cfg, dry_run=dry_run)
         print(api_res["response_text"].strip())
         print("-" * 80)
 
@@ -406,10 +525,12 @@ def run_task_workflow(task: str, symbol: str = None, stage: str = None, model: s
     return 1
 
 
-def run_full_product_lifecycle(idea: str, model: str = "qwen-3.8-27b", dry_run: bool = True, auto_approve: bool = True):
+def run_full_product_lifecycle(idea: str, model: str = None, provider: str = None, dry_run: bool = True, auto_approve: bool = True):
     """Runs an entire Enterprise Product Build across all 7 SDLC stages from Idea -> Cloud Deploy."""
+    cfg = resolve_provider_config(cli_model=model, cli_provider=provider)
     print_banner()
-    print(f"\n{C_MAGENTA}{C_BOLD}🚀 LAUNCHING FULL ENTERPRISE SDLC WORKFORCE FOR IDEA:{C_RESET} \"{idea}\"\n")
+    print(f"\n{C_MAGENTA}{C_BOLD}🚀 LAUNCHING FULL ENTERPRISE SDLC WORKFORCE FOR IDEA:{C_RESET} \"{idea}\"")
+    print(f"{C_BOLD}🤖 Configured Provider:{C_RESET} [{cfg['provider'].upper()}] {cfg['model']}\n")
     lifecycle_tasks = [
         ("01", f"Validate idea, stress-test market gaps, and generate PRD for: {idea}"),
         ("02", f"Design C4 architecture, ADRs, and OpenAPI contracts for: {idea}"),
@@ -420,13 +541,16 @@ def run_full_product_lifecycle(idea: str, model: str = "qwen-3.8-27b", dry_run: 
         ("07", f"Generate rootless multi-stage Dockerfile, /readyz probes, and CI/CD deploy pipeline for: {idea}")
     ]
     for stage_id, stage_task in lifecycle_tasks:
-        run_task_workflow(task=stage_task, stage=stage_id, model=model, dry_run=dry_run, auto_approve=auto_approve)
+        run_task_workflow(task=stage_task, stage=stage_id, model=cfg["model"], provider=cfg["provider"], dry_run=dry_run, auto_approve=auto_approve)
         print()
     show_pipeline_dashboard()
 
 
-def run_interactive_shell(model: str = "qwen-3.8-27b", dry_run: bool = False):
+def run_interactive_shell(model: str = None, provider: str = None, dry_run: bool = False):
     """Interactive CLI / TUI REPL like Claude Code or OpenCode where users control the whole workforce."""
+    cfg = resolve_provider_config(cli_model=model, cli_provider=provider)
+    active_model = cfg["model"]
+    active_provider = cfg["provider"]
     show_pipeline_dashboard()
     print(f"\n{C_BOLD}Interactive Commands:{C_RESET}")
     print("  • Type any product idea, feature, or bug to dispatch the right IT Department automatically")
@@ -442,7 +566,7 @@ def run_interactive_shell(model: str = "qwen-3.8-27b", dry_run: bool = False):
     current_stage = None
     while True:
         try:
-            prompt = input(f"{C_CYAN}{C_BOLD}apex ({model})>{C_RESET} ").strip()
+            prompt = input(f"{C_CYAN}{C_BOLD}apex ({active_provider}:{active_model})>{C_RESET} ").strip()
         except (EOFError, KeyboardInterrupt):
             print("\nExiting Apex CLI.")
             break
@@ -466,7 +590,7 @@ def run_interactive_shell(model: str = "qwen-3.8-27b", dry_run: bool = False):
             print(f"{C_GREEN}Locked active department override to: {current_stage}{C_RESET}")
         elif prompt.startswith("/build "):
             idea = prompt[len("/build "):].strip()
-            run_full_product_lifecycle(idea, model=model, dry_run=dry_run, auto_approve=False)
+            run_full_product_lifecycle(idea, model=active_model, provider=active_provider, dry_run=dry_run, auto_approve=False)
         elif prompt.startswith("/absorb "):
             target = prompt[len("/absorb "):].strip()
             if INGEST_SCRIPT.exists():
@@ -474,13 +598,16 @@ def run_interactive_shell(model: str = "qwen-3.8-27b", dry_run: bool = False):
             else:
                 print(f"{C_YELLOW}Run `python scripts/ingest_skill.py` to absorb: {target}{C_RESET}")
         else:
-            run_task_workflow(task=prompt, stage=current_stage, model=model, dry_run=dry_run, auto_approve=False)
+            run_task_workflow(task=prompt, stage=current_stage, model=active_model, provider=active_provider, dry_run=dry_run, auto_approve=False)
 
 
-def run_ab_benchmark(model: str = "qwen-3.8-27b", dry_run: bool = True) -> int:
+def run_ab_benchmark(model: str = None, provider: str = None, dry_run: bool = True) -> int:
     """Runs the 4-Stage Enterprise Benchmark comparing Raw Context vs. Apex Sliced Context."""
+    cfg = resolve_provider_config(cli_model=model, cli_provider=provider)
+    resolved_model = cfg["model"]
+    active_provider = cfg["provider"]
     print_banner()
-    print(f"\n{C_BOLD}📊 RUNNING 4-STAGE ENTERPRISE A/B BENCHMARK ({model}){C_RESET}\n")
+    print(f"\n{C_BOLD}📊 RUNNING 4-STAGE ENTERPRISE A/B BENCHMARK ([{active_provider.upper()}] {resolved_model}){C_RESET}\n")
     raw_repo_chars = sum(
         len(p.read_text(encoding="utf-8", errors="ignore"))
         for p in SKILL_ROOT.glob("**/*")
@@ -498,7 +625,7 @@ def run_ab_benchmark(model: str = "qwen-3.8-27b", dry_run: bool = True) -> int:
     total_raw, total_apex = 0, 0
     for st in stages:
         ctx = build_compound_context(st["task"], symbol=st["symbol"])
-        _ = call_bharatcode_api(ctx, model=model, dry_run=dry_run)
+        _ = call_provider_api(ctx, provider_cfg=cfg, dry_run=dry_run)
         apex_tok = ctx["estimated_tokens"]
         saved = round((1.0 - (apex_tok / st["raw_tokens"])) * 100, 1)
         total_raw += st["raw_tokens"]
@@ -523,8 +650,10 @@ def main():
                         help="Mount skill into editor: antigravity, opencode, claude, cursor, codex, or all")
     parser.add_argument("--status", action="store_true", help="Display the 8-Department SDLC Pipeline & L1 Memory Dashboard")
     parser.add_argument("--shell", "-i", action="store_true", help="Launch interactive CLI REPL session (like claude / opencode)")
-    parser.add_argument("--model", type=str, default=os.environ.get("BHARATCODE_MODEL", "qwen-3.8-27b"),
-                        help="Model name (qwen-3.8-27b, deepseek-v4.1-flash, gemini-3.8-flash, etc.)")
+    parser.add_argument("--provider", "-p", type=str, default=None,
+                        help="AI provider override: bharatcode, gemini, openai, groq, openrouter, ollama, or ide-native")
+    parser.add_argument("--model", "-m", type=str, default=None,
+                        help="Model name (qwen-3.8-27b, gemini-2.5-flash, gpt-4o-mini, llama-3.3-70b-versatile, etc.)")
     parser.add_argument("--dry-run", action="store_true", help="Verify routing, memory & gates offline without API billing")
     parser.add_argument("--yes", "-y", action="store_true", help="Auto-approve Supervisor Pre-Flight defaults")
     parser.add_argument("--benchmark", action="store_true", help="Run 4-Stage Enterprise A/B Benchmark")
@@ -532,22 +661,22 @@ def main():
     args = parser.parse_args()
 
     if args.benchmark:
-        sys.exit(run_ab_benchmark(model=args.model, dry_run=True if args.dry_run else False))
+        sys.exit(run_ab_benchmark(model=args.model, provider=args.provider, dry_run=True if args.dry_run else False))
     if args.install:
         mount_universal_editor_configs(args.install)
         sys.exit(0)
     if args.status:
-        show_pipeline_dashboard()
+        show_pipeline_dashboard(provider=args.provider, model=args.model)
         sys.exit(0)
     if args.build_product:
-        run_full_product_lifecycle(args.build_product, model=args.model, dry_run=args.dry_run, auto_approve=args.yes)
+        run_full_product_lifecycle(args.build_product, model=args.model, provider=args.provider, dry_run=args.dry_run, auto_approve=args.yes)
         sys.exit(0)
     if args.shell:
-        run_interactive_shell(model=args.model, dry_run=args.dry_run)
+        run_interactive_shell(model=args.model, provider=args.provider, dry_run=args.dry_run)
         sys.exit(0)
     if args.task:
         sys.exit(run_task_workflow(task=args.task, symbol=args.symbol, stage=args.stage,
-                                   model=args.model, dry_run=args.dry_run, auto_approve=args.yes))
+                                   model=args.model, provider=args.provider, dry_run=args.dry_run, auto_approve=args.yes))
 
     show_pipeline_dashboard()
     print("\nTip: Run with `--shell` for interactive mode, `--build-product \"Your SaaS Idea\"` for full SDLC, or `--install all` to mount into all editors.")

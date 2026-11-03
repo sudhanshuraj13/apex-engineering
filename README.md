@@ -138,19 +138,22 @@ python scripts/bharat_harness.py --build-product "Multi-Tenant Healthcare Portal
 # Execute a targeted engineering task with AST Call-Graph Slicing
 python scripts/bharat_harness.py --task "Fix webhook replay race condition" --symbol "cmd_verify" --yes
 
-# Run with BharatCode API (qwen-3.8-27b or deepseek-v4.1-flash)
-export BHARATCODE_API_KEY="your_api_key"
-python scripts/bharat_harness.py --task "Design Postgres RLS schema for invoices" --model qwen-3.8-27b
+# Auto-detects provider from .env (OpenAI, Gemini, Groq, OpenRouter, Ollama, BharatCode, or IDE-Native)
+python scripts/bharat_harness.py --task "Design Postgres RLS schema for invoices"
+
+# Or explicitly select provider & model
+python scripts/bharat_harness.py --provider gemini --task "Design Postgres RLS schema"
+python scripts/bharat_harness.py --provider bharatcode --model qwen-3.8-27b --task "Stripe webhook idempotency"
 ```
 
 ---
 
-## 🇮🇳 BharatCode Build League Integration (`qwen-3.8-27b` & `DeepSeek V4.1 Flash`)
+## 🇮🇳 BharatCode & Universal Provider Engine
 
-`Apex-Engineering` includes a native stateless engine (`scripts/bharat_harness.py`) purpose-built for **BharatCode's API (`https://bharatcode.ai/api/model/v1/chat/completions`)**:
-1. **Queue-Saver Context Slicing ($98.6\%$ Reduction):** BharatCode uses shared queue capacity where bulky prompts wait longer. By slicing repo context + AST call graphs + 1 department cartridge into **$<450$ tokens**, `qwen-3.8-27b` executes in the fastest queue lane.
-2. **Client-Side Stateless Memory (`"store": false`):** BharatCode's API requires `store: false`. `ApexHarness` maintains persistent state locally on disk via `.apex/l1-register.json` (180-token FSA register) and `.apex/l3-archive.db` (SQLite FTS5 BM25).
-3. **Zero 6-Try Debugging Loops:** Failed test runs automatically write to `blacklisted_attempts` in L1 memory so lightweight 27B/Flash models never repeat a broken fix.
+`Apex-Engineering` includes a native universal engine (`scripts/bharat_harness.py`) that auto-detects your provider from `.env` across **BharatCode**, **Google Gemini**, **OpenAI**, **Groq**, **OpenRouter**, **Ollama**, or **IDE-Native Local Mode**:
+1. **Queue-Saver Context Slicing ($98.6\%$ Reduction):** Slices repo context + AST call graphs + 1 department cartridge into **$<450$ tokens** so student/open-weight models execute in the fastest queue lane.
+2. **Client-Side Stateless Memory (`"store": false`):** Complies with stateless inference requirements (BharatCode, Groq, Gemini) by maintaining persistent state locally on disk via `.apex/l1-register.json` (180-token FSA register) and `.apex/l3-archive.db` (SQLite FTS5 BM25).
+3. **Zero 6-Try Debugging Loops:** Failed test runs automatically write to `blacklisted_attempts` in L1 memory so models never repeat a broken fix.
 
 ---
 
