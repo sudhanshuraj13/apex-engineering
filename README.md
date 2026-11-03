@@ -33,7 +33,7 @@ You can install `apex-engineering` globally via the `skills` CLI, mount it into 
 ### Option 0: Universal One-Command Mount (All Platforms at Once)
 Clone the repository and run the universal installer inside your target project to wire **Antigravity, OpenCode, Claude Code, Codex, and Cursor** simultaneously:
 ```bash
-git clone https://github.com/<your-username>/apex-engineering.git
+git clone https://github.com/sudhanshuraj13/apex-engineering.git
 python apex-engineering/scripts/bharat_harness.py --install all
 ```
 
@@ -42,7 +42,7 @@ python apex-engineering/scripts/bharat_harness.py --install all
 ### 1. Google Antigravity (IDE & CLI)
 **Via `npx skills` CLI:**
 ```bash
-npx skills add <your-username>/apex-engineering -a antigravity
+npx skills add sudhanshuraj13/apex-engineering -a antigravity
 ```
 **Via Apex CLI Installer (Project Workspace or Global Vault):**
 ```bash
@@ -58,7 +58,7 @@ cp -r . ~/.gemini/config/skills/apex-engineering
 ### 2. Claude Code (Anthropic CLI & VS Code / JetBrains IDE Extension)
 **Via `npx skills` CLI:**
 ```bash
-npx skills add <your-username>/apex-engineering -a claude-code
+npx skills add sudhanshuraj13/apex-engineering -a claude-code
 ```
 **Via Apex CLI Installer (Auto-configures `CLAUDE.md` & `.agents/skills/`):**
 ```bash
@@ -72,7 +72,7 @@ python scripts/bharat_harness.py --install claude
 ### 3. OpenCode (Terminal TUI & CLI Agent)
 **Via `npx skills` CLI:**
 ```bash
-npx skills add <your-username>/apex-engineering -a opencode
+npx skills add sudhanshuraj13/apex-engineering -a opencode
 ```
 **Via Apex CLI Installer:**
 ```bash
@@ -85,7 +85,7 @@ python scripts/bharat_harness.py --install opencode
 ### 4. OpenAI Codex (Codex CLI & Editor Integration)
 **Via `npx skills` CLI:**
 ```bash
-npx skills add <your-username>/apex-engineering -a codex
+npx skills add sudhanshuraj13/apex-engineering -a codex
 ```
 **Via Apex CLI Installer (Auto-configures `AGENTS.md`):**
 ```bash
@@ -98,7 +98,7 @@ python scripts/bharat_harness.py --install codex
 ### 5. Cursor & Windsurf (AI IDEs)
 **Via `npx skills` CLI:**
 ```bash
-npx skills add <your-username>/apex-engineering -a cursor
+npx skills add sudhanshuraj13/apex-engineering -a cursor
 ```
 **Via Apex CLI Installer (Generates `.cursor/rules/apex-engineering.mdc`):**
 ```bash
