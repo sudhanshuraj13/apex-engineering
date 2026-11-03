@@ -1,0 +1,59 @@
+{
+  "project_name": "Apex Enterprise SaaS Engine",
+  "version": "3.2.0",
+  "gears": {
+    "macro_build_checkpoints": [1, 3, 6],
+    "surgical_auto_pilot": [4, 5, 7, 8]
+  },
+  "departments": {
+    "1": {
+      "id": "01-product-discovery",
+      "name": "Product Strategy & PRD",
+      "cartridge": "cartridges/01-product-discovery.md",
+      "requires_approval": true
+    },
+    "2": {
+      "id": "02-principal-architect",
+      "name": "System Architecture & C4 Contracts",
+      "cartridge": "cartridges/02-principal-architect.md",
+      "requires_approval": false
+    },
+    "3": {
+      "id": "03-database-tenancy",
+      "name": "Database Schema & RLS Tenancy",
+      "cartridge": "cartridges/03-database-tenancy.md",
+      "requires_approval": true
+    },
+    "4": {
+      "id": "04-backend-resilience",
+      "name": "Backend APIs, Zod & Idempotency",
+      "cartridge": "cartridges/04-backend-resilience.md",
+      "requires_approval": false
+    },
+    "5": {
+      "id": "05-frontend-craft",
+      "name": "React 19 & WCAG UI Craft",
+      "cartridge": "cartridges/05-frontend-craft.md",
+      "requires_approval": false
+    },
+    "6": {
+      "id": "06-security-zero-trust",
+      "name": "OWASP SAST & BOLA Auditor",
+      "cartridge": "cartridges/06-security-zero-trust.md",
+      "requires_approval": true
+    },
+    "7": {
+      "id": "07-devops-cloud-cicd",
+      "name": "Docker, GitHub Actions & OTel",
+      "cartridge": "cartridges/07-devops-cloud-cicd.md",
+      "requires_approval": true
+    },
+    "8": {
+      "id": "08-deep-debugger",
+      "name": "Multi-Hop Backward AST Trace & Fix",
+      "cartridge": "cartridges/08-deep-debugger.md",
+      "requires_approval": false
+    }
+  }
+}
+

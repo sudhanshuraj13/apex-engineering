@@ -1,0 +1,35 @@
+{
+  "name": "apex-engineering",
+  "version": "3.3.0",
+  "description": "Frontier SWE & 8-Department Enterprise SaaS Microkernel & CLI Harness for Antigravity, Claude Code, OpenCode, Codex, Cursor, and BharatCode.",
+  "main": "bin/apex.js",
+  "bin": {
+    "apex-engineering": "./bin/apex.js",
+    "apex": "./bin/apex.js"
+  },
+  "scripts": {
+    "status": "python scripts/bharat_harness.py --status",
+    "shell": "python scripts/bharat_harness.py --shell",
+    "verify": "python scripts/apex_ctl.py verify",
+    "benchmark": "python scripts/bharat_harness.py --benchmark --dry-run",
+    "install:all": "python scripts/bharat_harness.py --install all",
+    "test": "python -m unittest discover -s benchmarks -p \"test_*.py\""
+  },
+  "keywords": [
+    "ai-agents",
+    "agent-skills",
+    "antigravity",
+    "claude-code",
+    "opencode",
+    "codex",
+    "cursor",
+    "bharatcode",
+    "swe-bench",
+    "enterprise-saas"
+  ],
+  "author": "Sudhanshu Raj",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
