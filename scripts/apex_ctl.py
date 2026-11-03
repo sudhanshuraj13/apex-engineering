@@ -439,19 +439,22 @@ def cmd_verify():
     # ── Step 2: Test / typecheck detection ──
     print("Running deterministic verification gate (Typecheck + Tests)...")
 
-    if (PROJECT_ROOT / "package.json").exists():
-        test_cmd = "npm test"
+    if (PROJECT_ROOT / "benchmarks").exists():
+        test_cmd = [sys.executable, "-m", "unittest", "discover", "-s", "benchmarks", "-p", "test_*.py"]
+        display_cmd = f'"{sys.executable}" -m unittest discover -s benchmarks -p "test_*.py"'
+        result = subprocess.run(test_cmd, capture_output=True, text=True, cwd=str(PROJECT_ROOT))
+    elif (PROJECT_ROOT / "package.json").exists():
+        display_cmd = "npm test"
+        result = subprocess.run("npm test", shell=True, capture_output=True, text=True, cwd=str(PROJECT_ROOT))
     elif (PROJECT_ROOT / "pyproject.toml").exists():
-        test_cmd = "pytest"
-    elif (PROJECT_ROOT / "benchmarks" / "test_benchmark_suite.py").exists():
-        test_cmd = f'"{sys.executable}" -m unittest discover -s benchmarks -p "test_*.py"'
+        display_cmd = "pytest"
+        result = subprocess.run("pytest", shell=True, capture_output=True, text=True, cwd=str(PROJECT_ROOT))
     else:
-        test_cmd = "echo No test runner found, checking syntax..."
-
-    result = subprocess.run(test_cmd, shell=True, capture_output=True, text=True, cwd=str(PROJECT_ROOT))
+        display_cmd = "echo No test runner found, checking syntax..."
+        result = subprocess.run(display_cmd, shell=True, capture_output=True, text=True, cwd=str(PROJECT_ROOT))
 
     if result.returncode == 0:
-        print(f"Test runner ......... PASS  ({test_cmd})")
+        print(f"Test runner ......... PASS  ({display_cmd})")
         print("STATUS: PASS (Exit Code 0)")
 
         # Log to WORKFORCE_LEDGER
@@ -470,7 +473,7 @@ def cmd_verify():
 
         sys.exit(0)
     else:
-        print(f"Test runner ......... FAIL  ({test_cmd})")
+        print(f"Test runner ......... FAIL  ({display_cmd})")
         print("STATUS: FAIL (Non-zero exit code)")
         if result.stdout:
             print(result.stdout[-500:])
@@ -478,7 +481,7 @@ def cmd_verify():
             print(result.stderr[-500:])
 
         # Append failure to L1 blacklist
-        fail_summary = f"Command '{test_cmd}' failed with exit code {result.returncode}"
+        fail_summary = f"Command '{display_cmd}' failed with exit code {result.returncode}"
         if fail_summary not in l1_data.get("blacklisted_attempts", []):
             l1_data.setdefault("blacklisted_attempts", []).append(fail_summary)
         with open(L1_PATH, "w", encoding="utf-8") as f:

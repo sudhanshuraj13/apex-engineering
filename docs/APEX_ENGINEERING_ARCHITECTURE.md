@@ -231,7 +231,7 @@ A security-first pipeline to absorb skills from GitHub, local paths, or vaults:
 
 ## 6. Empirical Validation (Phase 5 Benchmark Suite)
 
-The system is empirically proven via [`benchmarks/test_benchmark_suite.py`](file:///c:/Users/Sudhanshu%20raj/projects/apex_engineering_skill/benchmarks/test_benchmark_suite.py):
+The system is empirically proven via [`benchmarks/test_benchmark_suite.py`](file:///c:/Users/apex_engineering_skill/benchmarks/test_benchmark_suite.py):
 
 | Test Stage | Flaw Tested | Enforcement Mechanism | Result |
 | :--- | :--- | :--- | :--- |
