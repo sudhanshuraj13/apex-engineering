@@ -17,6 +17,7 @@ import subprocess
 import fnmatch
 import argparse
 import ast
+import hashlib
 from datetime import datetime
 
 # Ensure UTF-8 console output on Windows terminals
@@ -95,6 +96,7 @@ def init_environment():
             "allowed_write_scope": ["*"],
             "completed_steps": [],
             "blacklisted_attempts": [],
+            "blacklisted_diff_hashes": [],
         }
         with open(L1_PATH, "w", encoding="utf-8") as f:
             json.dump(default_l1, f, indent=2)
@@ -399,10 +401,12 @@ def cmd_begin(task_desc=None, symbol=None):
     # ── Active Department Cartridge (<250 tokens) ──
     phase = l1_data.get("current_phase", "04-backend-resilience")
     cartridge_path, cartridge_content = load_department_cartridge(phase)
+    print("\n--- ACTIVE DEPARTMENT CARTRIDGE ---")
     if cartridge_content:
-        print(f"\n--- ACTIVE CARTRIDGE ({phase}) ---")
         print(cartridge_content)
-        print("----------------------------------\n")
+    else:
+        print(f"# Active Department: {phase}\n- Obey strict tenant isolation, Apex Surgical Diffs (Strict YAGNI), and deterministic verification.")
+    print("-----------------------------------\n")
 
     # ── Zero-Dependency AST Symbol Slicer ──
     if symbol:
@@ -437,12 +441,26 @@ def cmd_verify():
 
     print("Scope guard ......... PASS")
 
+    # ── Step 1.5: Mechanical Diff-Hash Blocker ──
+    diff_proc = subprocess.run(["git", "diff"], capture_output=True, text=True, cwd=str(PROJECT_ROOT))
+    diff_cached = subprocess.run(["git", "diff", "--cached"], capture_output=True, text=True, cwd=str(PROJECT_ROOT))
+    diff_text = (diff_proc.stdout + "\n" + diff_cached.stdout).strip()
+    diff_hash = hashlib.sha256(diff_text.encode("utf-8")).hexdigest()[:12] if diff_text else "clean"
+    blacklisted_diff_hashes = l1_data.get("blacklisted_diff_hashes", [])
+
+    if diff_text and diff_hash in blacklisted_diff_hashes:
+        print(f"[APEX MECHANICAL BLOCK] Duplicate broken patch detected (diff hash: {diff_hash}). You MUST change your implementation strategy before re-running verify.")
+        sys.exit(1)
+
     # ── Step 2: Test / typecheck detection ──
     print("Running deterministic verification gate (Typecheck + Tests)...")
 
-    if (PROJECT_ROOT / "benchmarks").exists():
-        test_cmd = [sys.executable, "-m", "unittest", "discover", "-s", "benchmarks", "-p", "test_*.py"]
-        display_cmd = f'"{sys.executable}" -m unittest discover -s benchmarks -p "test_*.py"'
+    benchmarks_dir = PROJECT_ROOT / "benchmarks"
+    has_benchmark_tests = benchmarks_dir.exists() and any(benchmarks_dir.glob("test_*.py"))
+
+    if has_benchmark_tests:
+        test_cmd = [sys.executable, "-m", "unittest", "discover", "-s", str(benchmarks_dir), "-p", "test_*.py"]
+        display_cmd = f'"{sys.executable}" -m unittest discover -s "{benchmarks_dir}" -p "test_*.py"'
         result = subprocess.run(test_cmd, capture_output=True, text=True, cwd=str(PROJECT_ROOT))
     elif (PROJECT_ROOT / "package.json").exists():
         display_cmd = "npm test"
@@ -467,8 +485,9 @@ def cmd_verify():
                 f"| Verified task successfully | `PASS` |\n"
             )
 
-        # Clear blacklisted attempts on success
+        # Clear blacklisted attempts and diff hashes on success
         l1_data["blacklisted_attempts"] = []
+        l1_data["blacklisted_diff_hashes"] = []
         with open(L1_PATH, "w", encoding="utf-8") as f:
             json.dump(l1_data, f, indent=2)
 
@@ -481,10 +500,38 @@ def cmd_verify():
         if result.stderr:
             print(result.stderr[-500:])
 
-        # Append failure to L1 blacklist
-        fail_summary = f"Command '{display_cmd}' failed with exit code {result.returncode}"
+        # Compute changed files
+        changed_proc = subprocess.run(["git", "diff", "--name-only"], capture_output=True, text=True, cwd=str(PROJECT_ROOT))
+        cached_proc = subprocess.run(["git", "diff", "--cached", "--name-only"], capture_output=True, text=True, cwd=str(PROJECT_ROOT))
+        changed_files = sorted(list(set((changed_proc.stdout + "\n" + cached_proc.stdout).strip().splitlines())))
+        changed_files = [f for f in changed_files if f]
+        files_str = ", ".join(changed_files) if changed_files else "none"
+
+        # Extract first error line
+        err_output = (result.stderr or "") + "\n" + (result.stdout or "")
+        first_error_line = None
+        for line in err_output.splitlines():
+            line_strip = line.strip()
+            if any(kw in line_strip for kw in ["AssertionError:", "Error:", "Exception:", "FAILED", "FAIL:"]):
+                first_error_line = line_strip
+                break
+        if not first_error_line:
+            non_empty = [l.strip() for l in err_output.splitlines() if l.strip()]
+            first_error_line = non_empty[-1] if non_empty else f"Exit code {result.returncode}"
+        if len(first_error_line) > 100:
+            first_error_line = first_error_line[:97] + "..."
+
+        fail_summary = f"files=[{files_str}] hash={diff_hash} err={first_error_line}"
         if fail_summary not in l1_data.get("blacklisted_attempts", []):
             l1_data.setdefault("blacklisted_attempts", []).append(fail_summary)
+
+        # Append diff_hash to blacklisted_diff_hashes (keep last 5)
+        if diff_text:
+            hashes = l1_data.setdefault("blacklisted_diff_hashes", [])
+            if diff_hash not in hashes:
+                hashes.append(diff_hash)
+            l1_data["blacklisted_diff_hashes"] = hashes[-5:]
+
         with open(L1_PATH, "w", encoding="utf-8") as f:
             json.dump(l1_data, f, indent=2)
 

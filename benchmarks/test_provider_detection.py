@@ -98,6 +98,12 @@ class TestUniversalProviderDetection(unittest.TestCase):
                 self.assertEqual(cfg["model"], "universal-ide-agent")
                 self.assertEqual(cfg["base_url"], "local")
 
+                # When benchmark mode is requested without API keys, honor published benchmark defaults
+                cfg_bench = resolve_provider_config(for_benchmark=True)
+                self.assertEqual(cfg_bench["provider"], "bharatcode")
+                self.assertEqual(cfg_bench["model"], "qwen-3.8-27b")
+                self.assertEqual(cfg_bench["extra_body"], {"store": False})
+
 
 if __name__ == "__main__":
     unittest.main()

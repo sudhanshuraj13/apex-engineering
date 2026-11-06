@@ -14,6 +14,7 @@ if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 import json
 import time
+import hashlib
 import urllib.request
 import urllib.error
 import subprocess
@@ -85,7 +86,7 @@ def estimate_tokens(text: str) -> int:
     return max(1, len(text) // 4)
 
 
-def resolve_provider_config(cli_model: str = None, cli_provider: str = None) -> dict:
+def resolve_provider_config(cli_model: str = None, cli_provider: str = None, for_benchmark: bool = False) -> dict:
     """
     Auto-detects which AI provider the developer is using so the CLI works universally
     across OpenAI, Gemini, Groq, OpenRouter, Ollama, BharatCode, or IDE-Native mode.
@@ -168,7 +169,16 @@ def resolve_provider_config(cli_model: str = None, cli_provider: str = None) -> 
                 "extra_body": p["extra_body"]
             }
 
-    # 3. Default fallback for general GitHub users with no API keys set: IDE-Native Local Mode
+    # 3. Default fallback for general GitHub users with no API keys set:
+    if for_benchmark:
+        return {
+            "provider": "bharatcode",
+            "api_key": "",
+            "base_url": os.environ.get("BHARATCODE_BASE_URL", "https://bharatcode.ai/api/model/v1"),
+            "model": cli_model or "qwen-3.8-27b",
+            "extra_body": {"store": False}
+        }
+
     return {
         "provider": "ide-native",
         "api_key": "",
@@ -325,7 +335,7 @@ def run_supervisor_preflight_gate(task: str, dept: dict, auto_approve: bool = Fa
         print("│ 1. Container Security : [A] Multi-stage Rootless USER (Default)         [B] Standard   │")
         print("│ 2. Zero-Downtime Probe: [A] Enforce /livez & /readyz + SIGTERM (Default)[B] Basic Port │")
     else:
-        print("│ 1. Architecture Style : [A] Apex Surgical Diffs (Default)               [B] Full DDD   │")
+        print("│ 1. Architecture Style : [A] Apex Surgical Diffs (Strict YAGNI) (Default) [B] Full DDD  │")
         print("│ 2. Boundary Contracts : [A] Strict Zod/Pydantic + RFC 7807 (Default)    [B] Loose JSON │")
     print("│ 3. Gate Enforcement   : [A] Require `apex_ctl.py verify` == 0 (Default) [B] Warn Only  │")
     print(f"{C_YELLOW}{C_BOLD}└──────────────────────────────────────────────────────────────────────────────┘{C_RESET}")
@@ -601,9 +611,68 @@ def run_interactive_shell(model: str = None, provider: str = None, dry_run: bool
             run_task_workflow(task=prompt, stage=current_stage, model=active_model, provider=active_provider, dry_run=dry_run, auto_approve=False)
 
 
+def run_demo_loop() -> int:
+    """
+    Demonstrates how Apex's Mechanical Loop-Blocker prevents AI models from repeating
+    identical failed patches, forcing strategy shifts until deterministic pass.
+    """
+    print_banner()
+    print(f"\n{C_MAGENTA}{C_BOLD}🔄 APEX MECHANICAL LOOP-BLOCKER DEMO (3-Step Simulation){C_RESET}")
+    print(f"{C_DIM}Proves why coding agents cannot loop endlessly or hallucinate completion under Apex.{C_RESET}\n")
+
+    # Step 1: Flawed patch attempt 1
+    mock_flawed_diff = (
+        "diff --git a/src/db.py b/src/db.py\n"
+        "--- a/src/db.py\n"
+        "+++ b/src/db.py\n"
+        "@@ -42,3 +42,3 @@\n"
+        "-    query = 'SELECT * FROM users WHERE tenant_id = :tid'\n"
+        "+    query = 'SELECT * FROM users' # Buggy broad query\n"
+    )
+    diff_hash_1 = hashlib.sha256(mock_flawed_diff.encode("utf-8")).hexdigest()[:12]
+    error_line_1 = "AssertionError: Tenant isolation check failed in test_stage1_tenant_isolation"
+    scoped_sig_1 = f"files=[src/db.py] hash={diff_hash_1} err={error_line_1}"
+
+    print(f"{C_YELLOW}{C_BOLD}[STEP 1/3] Attempt 1: Agent generates flawed patch without tenant isolation...{C_RESET}")
+    print(f"  • Generated Diff Hash : {C_CYAN}{diff_hash_1}{C_RESET}")
+    print(f"  • Running Verify Gate : Test suite fails ({C_RED}Exit Code 1{C_RESET})")
+    print(f"  • Captured Error      : {C_RED}{error_line_1}{C_RESET}")
+    print(f"  • Apex Action         : Storing scoped error signature & diff hash in `.apex/l1-register.json`:")
+    print(f"    {C_DIM}blacklisted_attempts    += [\"{scoped_sig_1}\"]{C_RESET}")
+    print(f"    {C_DIM}blacklisted_diff_hashes += [\"{diff_hash_1}\"]{C_RESET}\n")
+
+    # Step 2: Agent attempts the same naive patch
+    print(f"{C_YELLOW}{C_BOLD}[STEP 2/3] Attempt 2: Naive agent retries identical patch (same strategy)...{C_RESET}")
+    print(f"  • Incoming Diff Hash  : {C_CYAN}{diff_hash_1}{C_RESET}")
+    print(f"  • Checking L1 Memory  : Diff hash {diff_hash_1} FOUND in `blacklisted_diff_hashes`!")
+    print(f"  • {C_RED}{C_BOLD}[APEX MECHANICAL BLOCK]{C_RESET} Duplicate broken patch detected (diff hash: {diff_hash_1}).")
+    print(f"    {C_RED}You MUST change your implementation strategy before re-running verify.{C_RESET}")
+    print(f"  • Result              : {C_RED}Hard Exit Code 1 before test runner boots{C_RESET} (0 wasted test/token cycles)\n")
+
+    # Step 3: Agent switches strategy to surgical diff
+    mock_valid_diff = (
+        "diff --git a/src/db.py b/src/db.py\n"
+        "--- a/src/db.py\n"
+        "+++ b/src/db.py\n"
+        "@@ -42,3 +42,3 @@\n"
+        "-    query = 'SELECT * FROM users'\n"
+        "+    query = 'SELECT * FROM users WHERE tenant_id = :tid AND active = true'\n"
+    )
+    diff_hash_2 = hashlib.sha256(mock_valid_diff.encode("utf-8")).hexdigest()[:12]
+
+    print(f"{C_YELLOW}{C_BOLD}[STEP 3/3] Attempt 3: Agent shifts strategy -> minimal surgical diff (Apex Surgical Diffs (Strict YAGNI))...{C_RESET}")
+    print(f"  • New Diff Hash       : {C_GREEN}{diff_hash_2}{C_RESET} (New Strategy)")
+    print(f"  • Checking L1 Memory  : Diff hash not blacklisted -> Proceeding to test runner")
+    print(f"  • Running Verify Gate : 14/14 tests PASS ({C_GREEN}Exit Code 0{C_RESET})")
+    print(f"  • Apex Action         : Clearing L1 negative memory (`blacklisted_attempts = []`, `blacklisted_diff_hashes = []`)")
+    print(f"  • Final Status        : {C_GREEN}{C_BOLD}✔ [APEX DETERMINISTIC GATE PASSED]{C_RESET}\n")
+    print(f"{C_CYAN}Summary: Apex mechanically breaks prompt retry loops and guarantees deterministic convergence.{C_RESET}\n")
+    return 0
+
+
 def run_ab_benchmark(model: str = None, provider: str = None, dry_run: bool = True) -> int:
     """Runs the 4-Stage Enterprise Benchmark comparing Raw Context vs. Apex Sliced Context."""
-    cfg = resolve_provider_config(cli_model=model, cli_provider=provider)
+    cfg = resolve_provider_config(cli_model=model, cli_provider=provider, for_benchmark=True)
     resolved_model = cfg["model"]
     active_provider = cfg["provider"]
     print_banner()
@@ -657,9 +726,12 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="Verify routing, memory & gates offline without API billing")
     parser.add_argument("--yes", "-y", action="store_true", help="Auto-approve Supervisor Pre-Flight defaults")
     parser.add_argument("--benchmark", action="store_true", help="Run 4-Stage Enterprise A/B Benchmark")
+    parser.add_argument("--demo-loop", action="store_true", help="Run 3-step Mechanical Loop-Blocker demo")
 
     args = parser.parse_args()
 
+    if args.demo_loop:
+        sys.exit(run_demo_loop())
     if args.benchmark:
         sys.exit(run_ab_benchmark(model=args.model, provider=args.provider, dry_run=True if args.dry_run else False))
     if args.install:

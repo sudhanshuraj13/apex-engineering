@@ -87,7 +87,7 @@ apex-engineering/                           # GitHub Repo Root
 ┌────────────────────────────────────────────────────────────────────────┐
 │ LAYER 2: 8 IT DEPARTMENT CARTRIDGES                                    │
 │ (skills/apex-engineering/cartridges/01 to 08)                          │
-│ • Negative Constraints: strictly forbidden patterns (Ponytail YAGNI)   │
+│ • Negative Constraints: Apex Surgical Diffs (Strict YAGNI)            │
 │ • Canonical Code Skeletons: copy-paste enterprise production patterns  │
 │ • Baton Artifacts: writes formal specs to .apex/artifacts/             │
 │ • Next Stage Pointer: hardcoded DAG transition                         │
@@ -142,7 +142,7 @@ Each cartridge enforces a **4-Block Canonical Structure** designed specifically 
 | Department ID | Cartridge File | Fused Core Winners | Key Enterprise Invariants Enforced |
 | :--- | :--- | :--- | :--- |
 | **01** | `01-product-discovery.md` | `idea-os`, `product-manager-toolkit`, `clarity-gate` | No code allowed; PRD baton under 350 tokens; 3-question Supervisor gate on ambiguity. |
-| **02** | `02-principal-architect.md` | `c4-architecture`, `adr`, `openapi-spec-generation` | Ponytail YAGNI (no multi-layer Hexagonal bloat for CRUD); OpenAPI schemas required. |
+| **02** | `02-principal-architect.md` | `c4-architecture`, `adr`, `openapi-spec-generation` | Apex Surgical Diffs (Strict YAGNI) (no multi-layer Hexagonal bloat for CRUD); OpenAPI schemas required. |
 | **03** | `03-database-tenancy.md` | `saas-multi-tenant`, `postgres-best-practices` | Mandatory `tenant_id` index; PostgreSQL RLS policies; scoped tenant transaction wrappers. |
 | **04** | `04-backend-resilience.md` | `backend-architect`, `zod-validation-expert`, `tdd` | Zod schema validation on controllers; atomic Redis idempotency lock (`SET NX EX 86400`). |
 | **05** | `05-frontend-craft.md` | `vercel-react-best-practices`, `wcag-audit-patterns` | RSC on layouts (no unnecessary `"use client"`); no `useEffect` fetching; WCAG aria labels. |
@@ -231,7 +231,7 @@ A security-first pipeline to absorb skills from GitHub, local paths, or vaults:
 
 ## 6. Empirical Validation (Phase 5 Benchmark Suite)
 
-The system is empirically proven via [`benchmarks/test_benchmark_suite.py`](file:///c:/Users/apex_engineering_skill/benchmarks/test_benchmark_suite.py):
+The system is empirically proven via [`benchmarks/test_benchmark_suite.py`](../benchmarks/test_benchmark_suite.py):
 
 | Test Stage | Flaw Tested | Enforcement Mechanism | Result |
 | :--- | :--- | :--- | :--- |
@@ -244,7 +244,7 @@ The system is empirically proven via [`benchmarks/test_benchmark_suite.py`](file
 
 ## 7. Summary
 
-**Apex Engineering (v3.2)** bridges the frontier gap not through parameter count, but through **deterministic architectural governance**:
+**Apex Engineering (v3.3)** bridges the frontier gap not through parameter count, but through **deterministic architectural governance**:
 * **High Speed & Low Cost:** Ultra-compact prompt injection (<450 tokens) keeps turns fast and cost-effective.
 * **Enterprise Invariants:** PostgreSQL RLS, idempotency locks, timing-safe auth, and rootless containers are enforced on every run.
 * **Deterministic Completion:** Work is finished only when automated compilers and test suites pass.

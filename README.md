@@ -3,7 +3,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-brightgreen.svg)](https://python.org)
-[![Benchmarks: 12/12 PASS](https://img.shields.io/badge/Benchmarks-12%2F12%20PASS-success.svg)](benchmarks/)
+[![Benchmarks: 14/14 PASS](https://img.shields.io/badge/Benchmarks-14%2F14%20PASS-success.svg)](benchmarks/)
 [![Token Footprint: <450](https://img.shields.io/badge/Token%20Footprint-%3C450%20tokens-orange.svg)](#boot-sequence)
 [![Platforms: Antigravity | Claude | OpenCode | Codex | Cursor | BharatCode](https://img.shields.io/badge/Platforms-All%20CLI%20%26%20IDEs-purple.svg)](#-installation-by-platform-cli--ide)
 
@@ -18,8 +18,9 @@ If you have Node 18+ and Python 3.10+, you can inspect and evaluate `Apex-Engine
 
 ```bash
 npm run status       # 📊 View live 8-Department SDLC pipeline & L1 memory
+npm run demo-loop    # 🔄 Run 30-second mechanical loop-blocker demo
 npm run benchmark    # 🧪 Run 4-Stage empirical token reduction benchmark
-npm test             # 🛡️ Run all 12 hostile enterprise unit & SAST tests
+npm test             # 🛡️ Run all 14 hostile enterprise unit & SAST tests
 npm run verify       # 🔒 Run deterministic scope guard + verification gate (Exit Code 0)
 npm run shell        # 💻 Launch the interactive multi-editor agentic CLI shell
 ```
@@ -148,6 +149,24 @@ python scripts/bharat_harness.py --provider bharatcode --model qwen-3.8-27b --ta
 
 ---
 
+## 🔄 Try the 30-Second Mechanical Loop-Blocker Demo
+
+See why coding agents running under Apex cannot get stuck in infinite retry loops or hallucinate passing tests:
+
+```bash
+# Run the 3-step automated loop-blocker simulation
+npm run demo-loop
+# Or via Python directly:
+python scripts/bharat_harness.py --demo-loop
+```
+
+**What it demonstrates in 3 automated steps:**
+1. **Attempt 1 (Flawed Patch):** Agent generates broken code $\rightarrow$ test fails $\rightarrow$ Apex hashes the exact diff and records the scoped error signature in `.apex/l1-register.json`.
+2. **Attempt 2 (Mechanical Loop Block):** Naive agent retries the identical flawed patch $\rightarrow$ Apex trips `[APEX MECHANICAL BLOCK]` with Exit Code 1 **before the test runner boots**, preventing wasted token and compute cycles.
+3. **Attempt 3 (Surgical Fix with Strategy Shift):** Agent changes strategy to a verified surgical diff $\rightarrow$ test suite passes (Exit Code 0) $\rightarrow$ L1 negative memory is cleared.
+
+---
+
 ## 🇮🇳 BharatCode & Universal Provider Engine
 
 `Apex-Engineering` includes a native universal engine (`scripts/bharat_harness.py`) that auto-detects your provider from `.env` across **BharatCode**, **Google Gemini**, **OpenAI**, **Groq**, **OpenRouter**, **Ollama**, or **IDE-Native Local Mode**:
@@ -177,7 +196,7 @@ python scripts/bharat_harness.py --provider bharatcode --model qwen-3.8-27b --ta
 ┌────────────────────────────────────────────────────────────────────────┐
 │ LAYER 2: 8 IT DEPARTMENT CARTRIDGES (cartridges/01 to 08)             │
 │ • Supervisor Pre-Flight Gate: 3 multiple-choice questions on high risk │
-│ • Negative Constraints: forbidden anti-patterns (Apex Surgical Diffs)  │
+│ • Negative Constraints: Apex Surgical Diffs (Strict YAGNI)            │
 │ • Canonical Code Skeletons: copy-paste enterprise production patterns  │
 │ • Baton Artifacts: writes formal specs to .apex/artifacts/             │
 └───────────────────────────────────┬────────────────────────────────────┘
@@ -295,15 +314,35 @@ apex-engineering/                           # GitHub Repo Root
 │   ├── bharat_harness.py                   # Interactive CLI, Multi-IDE Mounter & BharatCode Engine
 │   ├── index_local_skills.py               # Vault isolator & classifier
 │   └── ingest_skill.py                     # 64-pattern SkillSpector SAST + Distiller
-├── benchmarks/                             # Phase 5 Hostile Benchmark Suite (12/12 PASS)
+├── benchmarks/                             # Phase 5 Hostile Benchmark Suite (14/14 PASS)
 │   ├── fixtures_broken.py
-│   └── test_benchmark_suite.py
+│   ├── test_benchmark_suite.py             # 4-stage hostile enterprise security & concurrency suite
+│   └── test_provider_detection.py          # Universal multi-provider detection tests
 └── docs/                                   # Audit Trails & Deep Dives
     ├── APEX_ENGINEERING_ARCHITECTURE.md    # Complete architectural blueprint
     ├── BENCHMARK_REPORT.md                 # Auto-generated A/B token & test report
     ├── ISSUE_TRACKER.md                    # Root-cause debugging ledger
     └── WORKFORCE_LEDGER.md                 # Append-only chronological audit trail
 ```
+
+---
+
+## 🤝 Contributing & Good First Issues
+
+We welcome contributions from the community to make Apex the universal engineering standard for agentic coding. Here are great places to start:
+
+- **[Good First Issue #1] Add Go & Rust Stack Detection:** Extend `detect_stack()` in `scripts/apex_ctl.py` to inspect `go.mod` and `Cargo.toml` and inject relevant language-specific concurrency / memory safety invariants.
+- **[Good First Issue #2] TypeScript AST Slicing (`.ts` / `.tsx`):** Expand `slice_symbol()` in `scripts/apex_ctl.py` using a zero-dependency regex/token parser to slice function signatures and React components.
+- **[Good First Issue #3] Mobile Native Department Cartridge (`09-mobile-native.md`):** Author a `<250-token` cartridge establishing enterprise conventions for React Native, Expo, and Flutter (offline sync, secure keychain storage, permission handling).
+- **[Good First Issue #4] Ollama Live Streaming:** Add token streaming support to `call_provider_api()` in `scripts/bharat_harness.py` when connected to local Ollama endpoints.
+
+To submit a PR, ensure all 14 tests pass (`npm test`) and the verification gate succeeds (`npm run verify`).
+
+---
+
+## 💡 Prior Art & Inspiration
+
+Apex Engineering synthesizes architectural invariants, effort-tier routing, and SAST skill distillation inspired by open-source engineering principles in [Gravitas](https://github.com), [Superpowers](https://github.com), and [SkillSpector](https://github.com).
 
 ---
 

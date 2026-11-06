@@ -1,7 +1,7 @@
 ---
 name: apex-engineering
-description: "Frontier SWE & Enterprise SaaS Microkernel. Powers any model (including Gemini 3.8 Flash) with L1/L3 Memory, Gravitas 4-Tier Effort Routing, Claude-Style Supervisor Gating, and Deterministic Verification."
-tags: [enterprise, saas, memory, gravitas, verification]
+description: "Frontier SWE & Enterprise SaaS Microkernel. Powers any model with L1/L3 Memory, Apex 4-Tier Effort Routing, Claude-Style Supervisor Gating, and Deterministic Verification."
+tags: [enterprise, saas, memory, apex, verification]
 ---
 
 # Apex Engineering Microkernel
@@ -15,7 +15,7 @@ This automatically loads your L1 FSA state, active blacklisted failures, require
 
 ---
 
-## TIER-BASED EXECUTION (Gravitas 4-Tier Effort Engine)
+## TIER-BASED EXECUTION (Apex 4-Tier Effort Engine)
 Determine the task tier from your initial reconnaissance:
 1. **`tier-1: direct`** (Trivial bugfix, CSS adjustment, variable rename): Skip all questions and department DAG. Edit in place, run `apex_ctl.py verify`, and finish. Scope guard still runs.
 2. **`tier-2: compact`** (Standard feature, endpoint addition): Load single matching domain cartridge. Execute, verify, and log to `docs/WORKFORCE_LEDGER.md`.
