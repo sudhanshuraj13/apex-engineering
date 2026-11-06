@@ -42,3 +42,6 @@ python scripts/apex_ctl.py verify
 * If `STATUS: PASS (Exit Code 0)`: The script automatically records the change in `docs/WORKFORCE_LEDGER.md`, clears L1 blacklists, and advances the workflow.
 * If `STATUS: FAIL`: The error is automatically written to L1 `blacklisted_attempts`. You are forbidden from retrying the exact same fix.
 
+> [!TIP]
+> **Microkernel Invariant:** If modifying microkernel scripts (`scripts/apex_ctl.py` or `scripts/bharat_harness.py`), ensure `allowed_write_scope` remains `["*"]` in `.apex/l1-register.json` and verify syntax with `python -m py_compile scripts/apex_ctl.py` before invoking `verify`.
+

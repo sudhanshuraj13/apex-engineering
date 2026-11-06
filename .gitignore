@@ -1,6 +1,10 @@
-# Apex Runtime FSA State & Memory (Keep skill-registry.json tracked)
-.apex/l1-register.json
-.apex/l3-archive.db
+# Local Agent Mounting & Editor Configs (Prevent local machine path leaks)
+.agents/
+.cursor/
+
+# Apex Runtime FSA State & Ephemeral Memory (Keep skill-registry.json tracked)
+.apex/*
+!.apex/skill-registry.json
 
 # Python bytecode & cache
 __pycache__/
@@ -24,14 +28,3 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 desktop.ini
-
-# Ignore runtime project memory & databases
-.apex/l1-register.json
-.apex/l3-archive.db
-.apex/l3-archive.db-*
-.apex/artifacts/*
-!.apex/skill-registry.json
-
-# Python & OS caches
-__pycache__/
-.DS_Store

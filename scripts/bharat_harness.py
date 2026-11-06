@@ -225,7 +225,9 @@ def print_banner():
 
 def show_pipeline_dashboard(provider: str = None, model: str = None):
     """Renders the 8-Department SDLC Pipeline, L1 Memory State, and Active Batons in the CLI."""
-    subprocess.run([sys.executable, str(APEX_CTL_SCRIPT)], cwd=PROJECT_ROOT, capture_output=True)
+    healthy, _ = check_microkernel_health()
+    if healthy:
+        subprocess.run([sys.executable, str(APEX_CTL_SCRIPT)], cwd=PROJECT_ROOT, capture_output=True)
     l1 = {}
     if L1_PATH.exists():
         l1 = json.loads(L1_PATH.read_text(encoding="utf-8"))
@@ -259,6 +261,22 @@ def show_pipeline_dashboard(provider: str = None, model: str = None):
         print(f"\n{C_GREEN}✔ L1 Negative Memory Clean (0 Blacklisted Attempts){C_RESET}")
 
 
+def check_microkernel_health() -> tuple[bool, str]:
+    """
+    Validates that scripts/apex_ctl.py is syntactically sound before execution.
+    Prevents self-bricking the gate when developers or AI agents edit the microkernel controller.
+    """
+    if not APEX_CTL_SCRIPT.exists():
+        return False, f"Missing microkernel controller at {APEX_CTL_SCRIPT}"
+    compile_res = subprocess.run(
+        [sys.executable, "-m", "py_compile", str(APEX_CTL_SCRIPT)],
+        capture_output=True, text=True
+    )
+    if compile_res.returncode != 0:
+        return False, compile_res.stderr.strip()
+    return True, ""
+
+
 def mount_universal_editor_configs(target_editor: str = "all"):
     """
     Mounts Apex Engineering into any AI Coding Editor so developers can use
@@ -268,12 +286,28 @@ def mount_universal_editor_configs(target_editor: str = "all"):
     skill_md_path = SKILL_ROOT / "SKILL.md"
     skill_content = skill_md_path.read_text(encoding="utf-8") if skill_md_path.exists() else ""
 
+    try:
+        is_same_or_child = (PROJECT_ROOT == SKILL_ROOT) or APEX_CTL_SCRIPT.is_relative_to(PROJECT_ROOT)
+    except AttributeError:
+        is_same_or_child = (PROJECT_ROOT == SKILL_ROOT) or (str(PROJECT_ROOT) in str(APEX_CTL_SCRIPT))
+
+    if is_same_or_child:
+        ctl_cmd_begin = "python scripts/apex_ctl.py begin --task \"<your_task>\""
+        ctl_cmd_verify = "python scripts/apex_ctl.py verify"
+        mount_header = "# Apex Engineering Microkernel (Workspace Mode)\n\n"
+    else:
+        clean_script = str(APEX_CTL_SCRIPT).replace("\\", "/")
+        clean_root = str(SKILL_ROOT).replace("\\", "/")
+        ctl_cmd_begin = f'python "{clean_script}" begin --task "<your_task>"'
+        ctl_cmd_verify = f'python "{clean_script}" verify'
+        mount_header = f"# Apex Engineering Microkernel (Mounted from {clean_root})\n\n"
+
     pointer_block = (
-        f"# Apex Engineering Microkernel (Mounted from {SKILL_ROOT})\n\n"
+        f"{mount_header}"
         f"Before mutating any code, run:\n"
-        f"```bash\npython \"{APEX_CTL_SCRIPT}\" begin --task \"<your_task>\"\n```\n"
+        f"```bash\n{ctl_cmd_begin}\n```\n"
         f"After mutating code, you MUST pass the deterministic verification gate:\n"
-        f"```bash\npython \"{APEX_CTL_SCRIPT}\" verify\n```\n\n"
+        f"```bash\n{ctl_cmd_verify}\n```\n\n"
         f"{skill_content}\n"
     )
 
@@ -524,6 +558,15 @@ def run_task_workflow(task: str, symbol: str = None, stage: str = None, model: s
         baton_file = ARTIFACTS_DIR / dept["baton"]
         baton_file.write_text(f"# Baton: {dept['name']}\nTask: {task}\nTimestamp: {datetime.now().isoformat()}\n\n{api_res['response_text']}\n", encoding="utf-8")
 
+        # Self-protection against microkernel syntax corruption
+        healthy, err = check_microkernel_health()
+        if not healthy:
+            print(f"\n{C_RED}{C_BOLD}[APEX MICROKERNEL CORRUPTION DETECTED]{C_RESET}")
+            print(f"{APEX_CTL_SCRIPT.name} has a syntax error and cannot execute:")
+            print(f"{C_RED}{err}{C_RESET}")
+            print("Please fix the syntax error in scripts/apex_ctl.py before continuing. (L1 blacklist was protected).")
+            return 1
+
         env = os.environ.copy()
         env["APEX_PROJECT_ROOT"] = str(PROJECT_ROOT)
         verify_res = subprocess.run([sys.executable, str(APEX_CTL_SCRIPT), "verify"], cwd=PROJECT_ROOT, env=env, capture_output=True, text=True)
@@ -532,6 +575,10 @@ def run_task_workflow(task: str, symbol: str = None, stage: str = None, model: s
             return 0
         else:
             print(f"{C_RED}[APEX DETERMINISTIC GATE FAILED on Turn {turn}]{C_RESET} Appending to L1 Negative Memory Blacklist...")
+            if verify_res.stdout:
+                print(verify_res.stdout.strip()[-500:])
+            if verify_res.stderr:
+                print(verify_res.stderr.strip()[-500:])
     return 1
 
 

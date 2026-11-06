@@ -100,6 +100,16 @@ def init_environment():
         }
         with open(L1_PATH, "w", encoding="utf-8") as f:
             json.dump(default_l1, f, indent=2)
+    else:
+        try:
+            with open(L1_PATH, "r", encoding="utf-8") as f:
+                l1_data = json.load(f)
+            if not l1_data.get("allowed_write_scope"):
+                l1_data["allowed_write_scope"] = ["*"]
+                with open(L1_PATH, "w", encoding="utf-8") as f:
+                    json.dump(l1_data, f, indent=2)
+        except Exception:
+            pass
 
     conn = sqlite3.connect(str(L3_DB_PATH))
     cursor = conn.cursor()
@@ -264,7 +274,7 @@ def scope_guard(allowed_scopes):
     Returns (ok: bool, violations: list[str]).
     A scope of ["*"] allows everything.
     """
-    if "*" in allowed_scopes:
+    if not allowed_scopes or "*" in allowed_scopes:
         return True, []
 
     # Get changed files from git (staged + unstaged)
@@ -451,6 +461,22 @@ def cmd_verify():
     if diff_text and diff_hash in blacklisted_diff_hashes:
         print(f"[APEX MECHANICAL BLOCK] Duplicate broken patch detected (diff hash: {diff_hash}). You MUST change your implementation strategy before re-running verify.")
         sys.exit(1)
+
+    # ── Step 1.8: Fast Python Syntax Pre-check ──
+    changed_py_proc = subprocess.run(["git", "diff", "--name-only"], capture_output=True, text=True, cwd=str(PROJECT_ROOT))
+    cached_py_proc = subprocess.run(["git", "diff", "--cached", "--name-only"], capture_output=True, text=True, cwd=str(PROJECT_ROOT))
+    changed_py_files = [
+        f for f in sorted(list(set((changed_py_proc.stdout + "\n" + cached_py_proc.stdout).strip().splitlines())))
+        if f.endswith(".py") and (PROJECT_ROOT / f).exists()
+    ]
+    for py_file in changed_py_files:
+        c_res = subprocess.run([sys.executable, "-m", "py_compile", str(PROJECT_ROOT / py_file)], capture_output=True, text=True)
+        if c_res.returncode != 0:
+            print(f"SYNTAX PRE-CHECK FAIL – {py_file} has invalid syntax:")
+            err_line = c_res.stderr.strip().splitlines()[-1] if c_res.stderr.strip() else "SyntaxError"
+            print(f"  ✗ {err_line}")
+            print("Fix Python syntax before running test suite.")
+            sys.exit(1)
 
     # ── Step 2: Test / typecheck detection ──
     print("Running deterministic verification gate (Typecheck + Tests)...")
