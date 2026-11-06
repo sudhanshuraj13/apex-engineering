@@ -145,7 +145,7 @@ Each cartridge enforces a **4-Block Canonical Structure** designed specifically 
 | **02** | `02-principal-architect.md` | `c4-architecture`, `adr`, `openapi-spec-generation` | Apex Surgical Diffs (Strict YAGNI) (no multi-layer Hexagonal bloat for CRUD); OpenAPI schemas required. |
 | **03** | `03-database-tenancy.md` | `saas-multi-tenant`, `postgres-best-practices` | Mandatory `tenant_id` index; PostgreSQL RLS policies; scoped tenant transaction wrappers. |
 | **04** | `04-backend-resilience.md` | `backend-architect`, `zod-validation-expert`, `tdd` | Zod schema validation on controllers; atomic Redis idempotency lock (`SET NX EX 86400`). |
-| **05** | `05-frontend-craft.md` | `vercel-react-best-practices`, `wcag-audit-patterns` | RSC on layouts (no unnecessary `"use client"`); no `useEffect` fetching; WCAG aria labels. |
+| **05** | `05-frontend-craft.md` | `impeccable`, `hallmark`, `vercel-react-best-practices`, `wcag-audit-patterns` | RSC layouts; anti-generic editorial design (no purple gradient slop); WCAG contrast; deliberate typography & micro-interactions. |
 | **06** | `06-security-zero-trust.md` | `security-audit`, `auth-patterns`, `idor-testing` | BOLA session checks; timing-safe HMAC (`crypto.timingSafeEqual`); zero SQL injection. |
 | **07** | `07-devops-cloud-cicd.md` | `docker-expert`, `distributed-tracing`, `otel` | Rootless Docker container execution; pinned image tags; `/readyz` probes & `SIGTERM` drain. |
 | **08** | `08-deep-debugger.md` | `systematic-debugging`, `error-debugging-trace` | 3-step scientific debugging loop; backward AST caller hop tracing; zero band-aid null checks. |

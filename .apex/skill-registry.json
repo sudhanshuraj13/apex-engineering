@@ -1136,6 +1136,30 @@
         "ALWAYS verify compliance via deterministic unit tests before completion."
       ],
       "cartridge": "cartridges/custom/iso-timestamp-strict.md"
+    },
+    "impeccable": {
+      "domain": "react",
+      "department": "05-frontend-craft",
+      "tier": "core",
+      "description": "Design, polish, visual hierarchy, cognitive load, accessibility, micro-interactions, and bespoke UI craft.",
+      "rules": [
+        "No hedging, no shortcuts; deliverable must be complete with production-grade craft",
+        "Establish clear visual hierarchy with distinctive typography scale and intentional whitespace",
+        "Interactive elements must feature instant focus-visible, hover transitions, and explicit loading/disabled states",
+        "Craft bespoke empty states, skeleton loaders, and graceful error boundaries"
+      ]
+    },
+    "hallmark": {
+      "domain": "tailwind",
+      "department": "05-frontend-craft",
+      "tier": "core",
+      "description": "Design skill for websites and new pages that look designed, not generated.",
+      "rules": [
+        "Never purple-to-blue gradients, card-inside-a-card layouts, or emoji icons",
+        "Every color and font goes through a declared token; no literal hex colors in templates",
+        "Never transition: all; never animate layout width, height, top, or left",
+        "Hero headline, sentence, and primary action visible at 1280x800 without scrolling"
+      ]
     }
   },
   "quarantined_skills": [
