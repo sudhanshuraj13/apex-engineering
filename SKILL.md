@@ -9,7 +9,10 @@ tags: [enterprise, saas, memory, apex, verification]
 ## BOOT SEQUENCE (Run on Every Turn)
 Before writing any code or plan, execute:
 ```bash
+# If apex_ctl.py is in local workspace:
 python scripts/apex_ctl.py begin --task "$USER_PROMPT" [--symbol "$SYMBOL_NAME"]
+# Or globally across any external workspace:
+python ~/.gemini/config/skills/apex-engineering/scripts/apex_ctl.py begin --task "$USER_PROMPT" [--symbol "$SYMBOL_NAME"]
 ```
 This automatically loads your L1 FSA state, active blacklisted failures, required department rules, detected stack tags, skill-registry injections (<450 tokens), and lightweight zero-dependency AST symbol slices (<120 tokens).
 
@@ -37,7 +40,10 @@ If Tier 3 (`deep`) is active OR if the task touches **DBMS/Migrations, Stripe/Bi
 ## VERIFICATION & COMPLETION
 Never declare success in prose. After making edits, run:
 ```bash
+# If apex_ctl.py is in local workspace:
 python scripts/apex_ctl.py verify
+# Or globally across any external workspace:
+python ~/.gemini/config/skills/apex-engineering/scripts/apex_ctl.py verify
 ```
 * If `STATUS: PASS (Exit Code 0)`: The script automatically records the change in `docs/WORKFORCE_LEDGER.md`, clears L1 blacklists, and advances the workflow.
 * If `STATUS: FAIL`: The error is automatically written to L1 `blacklisted_attempts`. You are forbidden from retrying the exact same fix.
